@@ -1,0 +1,180 @@
+{
+  "siteTitle": "HDP Studio",
+  "defaultPage": "hdp-oee-neo-spray/overview",
+  "groups": [
+    {
+      "id": "hdp-oee-neo-spray",
+      "title": "HDP OEE Neo Spray",
+      "pages": [
+        {
+          "id": "overview",
+          "title": "Overview",
+          "file": "hdp-oee-neo-spray/overview.md",
+          "summary": "Module scope, technology stack, active and planned pages, and shopfloor topology."
+        },
+        {
+          "id": "system-architecture",
+          "title": "System Architecture",
+          "file": "hdp-oee-neo-spray/system-architecture.md",
+          "summary": "Dual-DbContext design, frontend layout event bus, Live vs Historical pipeline, and Mermaid diagrams."
+        },
+        {
+          "id": "pages-and-ui",
+          "title": "Pages, UI & Right Sidebar",
+          "file": "hdp-oee-neo-spray/pages-and-ui.md",
+          "summary": "Shared HDP Studio shell, 5-panel right sidebar, Live Layout charts & floor grid, Input Reject, and Power BI views."
+        },
+        {
+          "id": "oee-formulas-and-logic",
+          "title": "OEE Formulas & Business Logic",
+          "file": "hdp-oee-neo-spray/oee-formulas-and-logic.md",
+          "summary": "Simple vs Aggregate OEE modes, dynamic shift windows, Live vs Historical rules, Last OEE S1-S3, and reject math."
+        },
+        {
+          "id": "api-and-exports",
+          "title": "API & Data Export Reference",
+          "file": "hdp-oee-neo-spray/api-and-exports.md",
+          "summary": "Complete OEEController JSON endpoints, POST mutations, parameters, payloads, and CSV/XLSX/PDF export specs."
+        },
+        {
+          "id": "database-schema",
+          "title": "Database Schema & Views",
+          "file": "hdp-oee-neo-spray/database-schema.md",
+          "summary": "Column-by-column definitions across HDPStudioEntities and HDPStudioOEEStudioEntities."
+        },
+        {
+          "id": "user-guide",
+          "title": "Operator & Supervisor Guide",
+          "file": "hdp-oee-neo-spray/user-guide.md",
+          "summary": "Day-to-day dashboard monitoring, cascading filters, exports, throw-off reject input, shift reset, and troubleshooting."
+        }
+      ]
+    },
+    {
+      "id": "hdp-counting-downtime-dij",
+      "title": "HDP Counting Downtime DIJ",
+      "pages": [
+        {
+          "id": "overview",
+          "title": "Overview",
+          "file": "hdp-counting-downtime-dij/overview.md",
+          "summary": "Operational scope (C05), technology stack, HDP Studio entry points, shopfloor auth bypass, and key capabilities."
+        },
+        {
+          "id": "system-architecture",
+          "title": "System Architecture",
+          "file": "hdp-counting-downtime-dij/system-architecture.md",
+          "summary": "Single-DbContext architecture, transaction sequence, 4-layer sync, EPPlus auto-export pipeline, and operational caveats."
+        },
+        {
+          "id": "ui-pwa-and-sync",
+          "title": "UI, PWA & Real-Time Sync",
+          "file": "hdp-counting-downtime-dij/ui-pwa-and-sync.md",
+          "summary": "2-column dark layout, 12-color machine palette, UI state machine, URL deep-linking, dynamic PWA manifest, and 4-layer sync."
+        },
+        {
+          "id": "api-and-auto-export",
+          "title": "API & Auto-Export Reference",
+          "file": "hdp-counting-downtime-dij/api-and-auto-export.md",
+          "summary": "All 7 CountingDowntimeDIJController endpoints, CSRF contracts, FormatSeconds rules, and scheduled EPPlus .xlsx schema."
+        },
+        {
+          "id": "database-schema",
+          "title": "Database Schema",
+          "file": "hdp-counting-downtime-dij/database-schema.md",
+          "summary": "ER diagram and column-by-column definitions for hdps_common_mst_machine, hdps_cddij_log_downtime, and hdps_common_mst_exportedpath."
+        },
+        {
+          "id": "user-guide",
+          "title": "Operator & Supervisor Guide",
+          "file": "hdp-counting-downtime-dij/user-guide.md",
+          "summary": "Shopfloor downtime workflows, per-machine standalone PWA installation, SQL export tuning, and troubleshooting."
+        }
+      ]
+    },
+    {
+      "id": "hdp-locator-nest-dij",
+      "title": "HDP Locator Nest DIJ",
+      "pages": [
+        {
+          "id": "overview",
+          "title": "Overview",
+          "file": "hdp-locator-nest-dij/overview.md",
+          "summary": "Operational scope, technology stack, HDP Studio & legacy entry points, split read/edit access model, and capabilities."
+        },
+        {
+          "id": "system-architecture",
+          "title": "System Architecture",
+          "file": "hdp-locator-nest-dij/system-architecture.md",
+          "summary": "Single-DbContext architecture, load/upsert sequence, cell classification pipeline, Mermaid diagrams, and hardening notes."
+        },
+        {
+          "id": "grid-ui-and-interactions",
+          "title": "Grid UI, Search & Edit Mode",
+          "file": "hdp-locator-nest-dij/grid-ui-and-interactions.md",
+          "summary": "Horizontal Nest 1-4 rack layout, 30-row paired matrix, zone color & blocked rules, live search navigator, and edit modal."
+        },
+        {
+          "id": "api-and-database",
+          "title": "API & Database Schema",
+          "file": "hdp-locator-nest-dij/api-and-database.md",
+          "summary": "All 3 LocatorNestDIJController endpoints, Min(fno) grouping & upsert rules, hdps_dij_ln_mst_locator schema, and SQL checks."
+        },
+        {
+          "id": "user-guide",
+          "title": "Operator & Admin Guide",
+          "file": "hdp-locator-nest-dij/user-guide.md",
+          "summary": "Shopfloor toy search, color legend, authenticated Edit Mode slot management, blocking/clearing conventions, and troubleshooting."
+        }
+      ]
+    },
+    {
+      "id": "hdp-piloting-report-dij",
+      "title": "HDP Piloting Report DIJ",
+      "pages": [
+        {
+          "id": "overview",
+          "title": "Overview",
+          "file": "hdp-piloting-report-dij/overview.md",
+          "summary": "Operational scope (C05), technology stack, Gemini Vision OCR & dual EPPlus reporting, entry points, and capabilities."
+        },
+        {
+          "id": "system-architecture",
+          "title": "System Architecture",
+          "file": "hdp-piloting-report-dij/system-architecture.md",
+          "summary": "Dual-DbContext & Gemini API architecture, batch OCR sequence, dual EPPlus export, Part No cascade, and security notes."
+        },
+        {
+          "id": "ui-ocr-and-settings",
+          "title": "UI, OCR Capture & Settings",
+          "file": "hdp-piloting-report-dij/ui-ocr-and-settings.md",
+          "summary": "4 capture modes, batch OCR merge, 4-mode review modal, DPU conditional form, 39-col DataTable, and 3-tab Settings UI."
+        },
+        {
+          "id": "formulas-and-ocr-logic",
+          "title": "Cycle Time, Ink Math & OCR Logic",
+          "file": "hdp-piloting-report-dij/formulas-and-ocr-logic.md",
+          "summary": "mm:ss cycle-time math, Output per Hour formula & worked example, multi-angle ink scaling, and 40-field Gemini OCR."
+        },
+        {
+          "id": "api-and-auto-export",
+          "title": "API & Auto-Export Reference",
+          "file": "hdp-piloting-report-dij/api-and-auto-export.md",
+          "summary": "All 20 OCRController actions, custom AJAX CSRF filter, 38-col Piloting Report .xlsx, and 6-col XLOOKUP OEE Report."
+        },
+        {
+          "id": "database-schema",
+          "title": "Database Schema",
+          "file": "hdp-piloting-report-dij/database-schema.md",
+          "summary": "ER diagram and column definitions across HDPStudioEntities (7 tables) and ProddevEntities2 (pd_user)."
+        },
+        {
+          "id": "user-guide",
+          "title": "Operator & IE Admin Guide",
+          "file": "hdp-piloting-report-dij/user-guide.md",
+          "summary": "Mimaki RasterLink capture & OCR workflow, DPU entry, append-only edits, Settings tuning, and troubleshooting."
+        }
+      ]
+    }
+  ]
+}
