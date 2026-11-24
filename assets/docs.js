@@ -278,7 +278,7 @@
         'Browsers block <code>fetch()</code> requests over <code>file://</code>. ' +
         "Start a local HTTP server from the repository root (for example " +
         "<code>python -m http.server 8000</code> or VS Code Live Server) and open " +
-        "<code>http://localhost:8000/docs/</code>."
+        "<code>http://localhost:8000/</code>."
       );
     }
     return "";
