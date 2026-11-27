@@ -39,9 +39,6 @@
   const tocList = document.getElementById("tocList");
   const tocCount = document.getElementById("tocCount");
 
-  const breadcrumbs = document.getElementById("breadcrumbs");
-  const readingTimeBadge = document.getElementById("readingTimeBadge");
-  const copyPageLinkBtn = document.getElementById("copyPageLinkBtn");
   const markdownContent = document.getElementById("markdownContent");
   const docPagination = document.getElementById("docPagination");
 
@@ -497,7 +494,6 @@
     hideError();
     showLoading(true);
     updateActiveNavLink();
-    renderBreadcrumbs(pageEntry);
     renderPagination(pageEntry);
 
     try {
@@ -507,7 +503,6 @@
       }
 
       const mdText = await res.text();
-      updateReadingTime(mdText);
 
       markdownContent.innerHTML = marked.parse(mdText);
 
@@ -545,26 +540,6 @@
       );
       showLoading(false);
     }
-  }
-
-  function renderBreadcrumbs(pageEntry) {
-    breadcrumbs.innerHTML =
-      '<a href="#' + escapeHtml(manifest.defaultPage) + '">Docs</a>' +
-      '<i class="fas fa-chevron-right breadcrumb-sep"></i>' +
-      "<span>" + escapeHtml(pageEntry.groupTitle) + "</span>" +
-      '<i class="fas fa-chevron-right breadcrumb-sep"></i>' +
-      '<span class="breadcrumb-current">' + escapeHtml(pageEntry.title) + "</span>";
-  }
-
-  function updateReadingTime(mdText) {
-    const words = mdText
-      .replace(/```[\s\S]*?```/g, " ")
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean).length;
-    const mins = Math.max(1, Math.ceil(words / 210));
-    readingTimeBadge.innerHTML =
-      '<i class="far fa-clock"></i> <span>' + mins + " min read</span>";
   }
 
   // Transform GitHub-style alert blockquotes (> [!NOTE], > [!TIP], etc.)
@@ -1196,14 +1171,6 @@
 
     scrollTopBtn.addEventListener("click", function () {
       window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    copyPageLinkBtn.addEventListener("click", function () {
-      copyTextToClipboard(
-        window.location.href,
-        copyPageLinkBtn,
-        '<i class="fas fa-link"></i> <span>Copy link</span>'
-      );
     });
 
     // Lightbox Controls
