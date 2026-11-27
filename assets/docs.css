@@ -55,6 +55,9 @@
   --code-inline-bg: #efede5;
   --code-inline-border: #e3e0d5;
   --code-inline-color: #1f1f1d;
+  --swatch-checker-bg: #ffffff;
+  --swatch-checker-cell: #d8d6cc;
+  --swatch-border: rgba(20, 20, 19, 0.22);
 
   --hljs-base: #24292e;
   --hljs-comment: #6a737d;
@@ -149,6 +152,9 @@
   --code-inline-bg: #1f1f1d;
   --code-inline-border: #3d3d3a;
   --code-inline-color: #f5f4f0;
+  --swatch-checker-bg: #2e2e2b;
+  --swatch-checker-cell: #4a4a46;
+  --swatch-border: rgba(250, 249, 245, 0.24);
 
   --hljs-base: #e2e0d8;
   --hljs-comment: #8b949e;
@@ -256,7 +262,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 24px 0 14px;
   position: fixed;
   top: 0;
   left: 0;
@@ -276,10 +282,19 @@ body {
 .brand-link {
   display: inline-flex;
   align-items: center;
+  gap: 12px;
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
 }
 
 .brand-title {
@@ -900,6 +915,44 @@ body {
   padding: 0.15em 0.45em;
   border-radius: 6px;
   word-break: break-word;
+}
+
+/* Inline Color Swatches */
+.markdown-body code.code-color-chip {
+  white-space: nowrap;
+  word-break: normal;
+}
+
+.color-swatch {
+  position: relative;
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  min-width: 12px;
+  min-height: 12px;
+  border-radius: 3px;
+  vertical-align: -0.15em;
+  margin-right: 0.42em;
+  overflow: hidden;
+  user-select: none;
+  background-color: var(--swatch-checker-bg);
+  background-image:
+    linear-gradient(45deg, var(--swatch-checker-cell) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--swatch-checker-cell) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--swatch-checker-cell) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--swatch-checker-cell) 75%);
+  background-size: 6px 6px;
+  background-position: 0 0, 0 3px, 3px -3px, -3px 0;
+  box-shadow: 0 0 0 1px var(--swatch-border);
+}
+
+.color-swatch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--swatch-color);
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.22);
 }
 
 /* Code Block Containers */
@@ -1632,6 +1685,15 @@ body {
 @media (max-width: 640px) {
   .docs-header {
     padding: 0 14px;
+  }
+
+  .brand-link {
+    gap: 10px;
+  }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
   }
 
   .brand-title {

@@ -516,6 +516,7 @@
       rewriteInternalLinks(pageEntry);
       currentMermaidEntries = extractMermaidBlocks();
       highlightAndWrapCodeBlocks();
+      enhanceColorSwatches();
       buildTocAndAnchors();
 
       document.title =
@@ -928,6 +929,57 @@
         const text = codeEl ? codeEl.textContent : pre.textContent;
         copyTextToClipboard(text, copyBtn, '<i class="far fa-copy"></i> <span>Copy</span>');
       });
+    });
+  }
+
+  const COLOR_VALUE_PATTERN =
+    "(?:#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgba?|hsla?)\\(\\s*[^()]+\\s*\\))";
+  const PURE_COLOR_RE = new RegExp("^" + COLOR_VALUE_PATTERN + "$");
+  const CSS_VAR_COLOR_RE = new RegExp(
+    "^(--[a-zA-Z0-9_-]+:\\s*)(" + COLOR_VALUE_PATTERN + ")$"
+  );
+
+  function isValidCssColor(value) {
+    if (typeof CSS !== "undefined" && typeof CSS.supports === "function") {
+      return CSS.supports("color", value);
+    }
+    const s = new Option().style;
+    s.color = "";
+    s.color = value;
+    return s.color !== "";
+  }
+
+  function createColorSwatch(colorValue) {
+    const swatch = document.createElement("span");
+    swatch.className = "color-swatch";
+    swatch.setAttribute("aria-hidden", "true");
+    swatch.style.setProperty("--swatch-color", colorValue);
+    return swatch;
+  }
+
+  function enhanceColorSwatches() {
+    markdownContent.querySelectorAll("code").forEach(function (codeEl) {
+      if (codeEl.closest("pre") || codeEl.querySelector(".color-swatch")) return;
+
+      const rawText = codeEl.textContent.trim();
+      if (!rawText) return;
+
+      if (PURE_COLOR_RE.test(rawText) && isValidCssColor(rawText)) {
+        codeEl.classList.add("code-color-chip");
+        codeEl.title = "Color: " + rawText;
+        codeEl.prepend(createColorSwatch(rawText));
+        return;
+      }
+
+      const cssVarMatch = rawText.match(CSS_VAR_COLOR_RE);
+      if (cssVarMatch && isValidCssColor(cssVarMatch[2])) {
+        codeEl.classList.add("code-color-chip");
+        codeEl.title = "Color: " + cssVarMatch[2];
+        codeEl.textContent = "";
+        codeEl.appendChild(document.createTextNode(cssVarMatch[1]));
+        codeEl.appendChild(createColorSwatch(cssVarMatch[2]));
+        codeEl.appendChild(document.createTextNode(cssVarMatch[2]));
+      }
     });
   }
 
