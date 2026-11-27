@@ -37,7 +37,6 @@
   const tocSidebar = document.getElementById("tocSidebar");
   const tocScrollArea = document.getElementById("tocScrollArea");
   const tocList = document.getElementById("tocList");
-  const tocCount = document.getElementById("tocCount");
 
   const markdownContent = document.getElementById("markdownContent");
   const docPagination = document.getElementById("docPagination");
@@ -532,7 +531,6 @@
       console.error("Failed to load documentation page:", err);
       markdownContent.innerHTML = "";
       tocList.innerHTML = "";
-      tocCount.textContent = "0";
       showError(
         "Failed to load document",
         'Could not load "' + pageEntry.file + '". ' + err.message,
@@ -1031,7 +1029,6 @@
       tocList.appendChild(li);
     });
 
-    tocCount.textContent = String(headingsData.length);
     if (headingsData.length === 0) {
       const emptyLi = document.createElement("li");
       emptyLi.className = "toc-empty";
