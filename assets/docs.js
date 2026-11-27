@@ -26,13 +26,17 @@
     document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
   let isTocHovered = false;
   let lightboxZoom = 1;
+  let searchResults = [];
+  let searchSelectedIndex = -1;
 
   // ── DOM References ──
   const navSidebar = document.getElementById("navSidebar");
   const navTree = document.getElementById("navTree");
-  const navSearchInput = document.getElementById("navSearchInput");
-  const clearNavSearchBtn = document.getElementById("clearNavSearchBtn");
-  const navDocCount = document.getElementById("navDocCount");
+
+  const searchModal = document.getElementById("searchModal");
+  const searchModalInput = document.getElementById("searchModalInput");
+  const searchModalClearBtn = document.getElementById("searchModalClearBtn");
+  const searchModalResults = document.getElementById("searchModalResults");
 
   const tocSidebar = document.getElementById("tocSidebar");
   const tocScrollArea = document.getElementById("tocScrollArea");
@@ -305,6 +309,7 @@
       tocSidebar.classList.add("open");
       drawerOverlay.classList.add("open");
       document.body.style.overflow = "hidden";
+      requestAnimationFrame(updateTocScrollFades);
     }
   }
 
@@ -390,25 +395,11 @@
   }
 
   // ── Navigation Tree ──
-  function renderNavTree(filterQuery) {
-    const query = (filterQuery || "").toLowerCase().trim();
+  function renderNavTree() {
     navTree.innerHTML = "";
-    let visiblePageCount = 0;
 
     manifest.groups.forEach(function (group) {
-      const matchingPages = group.pages.filter(function (page) {
-        if (!query) return true;
-        const haystack = (
-          group.title +
-          " " +
-          page.title +
-          " " +
-          (page.summary || "")
-        ).toLowerCase();
-        return haystack.includes(query);
-      });
-
-      if (matchingPages.length === 0) return;
+      if (!group.pages || group.pages.length === 0) return;
 
       const groupEl = document.createElement("div");
       groupEl.className = "nav-group";
@@ -430,8 +421,7 @@
       const listEl = document.createElement("ul");
       listEl.className = "nav-group-pages";
 
-      matchingPages.forEach(function (page) {
-        visiblePageCount++;
+      group.pages.forEach(function (page) {
         const route = group.id + "/" + page.id;
         const li = document.createElement("li");
         li.className = "nav-page-item";
@@ -457,17 +447,136 @@
       groupEl.appendChild(listEl);
       navTree.appendChild(groupEl);
     });
+  }
 
-    if (visiblePageCount === 0) {
+  // ── Search Modal (Ctrl+K) ──
+  function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function highlightSearchMatches(text, tokens) {
+    let html = escapeHtml(text);
+    if (!tokens.length) return html;
+    const pattern = new RegExp(
+      "(" + tokens.map(escapeRegex).join("|") + ")",
+      "gi"
+    );
+    return html.replace(pattern, '<mark class="search-highlight">$1</mark>');
+  }
+
+  function openSearchModal() {
+    if (!searchModal || !manifest) return;
+    closeAllDrawers();
+    searchModal.classList.add("open");
+    document.body.style.overflow = "hidden";
+    renderSearchResults(searchModalInput.value);
+    setTimeout(function () {
+      searchModalInput.focus();
+      searchModalInput.select();
+    }, 20);
+  }
+
+  function closeSearchModal() {
+    if (!searchModal || !searchModal.classList.contains("open")) return;
+    searchModal.classList.remove("open");
+    if (!diagramLightbox.classList.contains("open")) {
+      document.body.style.overflow = "";
+    }
+  }
+
+  function updateSearchSelection(index) {
+    const items = searchModalResults.querySelectorAll(".search-result-item");
+    if (!items.length) {
+      searchSelectedIndex = -1;
+      return;
+    }
+    searchSelectedIndex = (index + items.length) % items.length;
+    items.forEach(function (el, i) {
+      const isSelected = i === searchSelectedIndex;
+      el.classList.toggle("selected", isSelected);
+      el.setAttribute("aria-selected", isSelected ? "true" : "false");
+      if (isSelected) {
+        el.scrollIntoView({ block: "nearest" });
+      }
+    });
+  }
+
+  function selectSearchResult(page) {
+    if (!page) return;
+    closeSearchModal();
+    if (window.location.hash === "#" + page.route) {
+      loadPage(page.route, "");
+    } else {
+      window.location.hash = "#" + page.route;
+    }
+  }
+
+  function renderSearchResults(rawQuery) {
+    const query = (rawQuery || "").trim();
+    const tokens = query
+      ? query.toLowerCase().split(/\s+/).filter(Boolean)
+      : [];
+
+    searchModalClearBtn.style.display = query ? "inline-flex" : "none";
+
+    searchResults = flatPages.filter(function (page) {
+      if (!tokens.length) return true;
+      const haystack = (
+        page.groupTitle +
+        " " +
+        page.title +
+        " " +
+        page.summary
+      ).toLowerCase();
+      return tokens.every(function (tok) {
+        return haystack.includes(tok);
+      });
+    });
+
+    searchModalResults.innerHTML = "";
+
+    if (searchResults.length === 0) {
+      searchSelectedIndex = -1;
       const empty = document.createElement("div");
-      empty.className = "nav-empty-state";
-      empty.textContent = 'No pages match "' + filterQuery + '".';
-      navTree.appendChild(empty);
+      empty.className = "search-modal-empty";
+      empty.textContent = 'No pages match "' + query + '".';
+      searchModalResults.appendChild(empty);
+      return;
     }
 
-    const total = flatPages.length;
-    navDocCount.textContent =
-      total + (total === 1 ? " document" : " documents");
+    searchResults.forEach(function (page, idx) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "search-result-item" + (idx === 0 ? " selected" : "");
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-selected", idx === 0 ? "true" : "false");
+
+      btn.innerHTML =
+        '<div class="search-result-top">' +
+        '<span class="search-result-title">' +
+        highlightSearchMatches(page.title, tokens) +
+        "</span>" +
+        '<span class="search-result-group">' +
+        highlightSearchMatches(page.groupTitle, tokens) +
+        "</span>" +
+        "</div>" +
+        (page.summary
+          ? '<div class="search-result-summary">' +
+            highlightSearchMatches(page.summary, tokens) +
+            "</div>"
+          : "");
+
+      btn.addEventListener("mouseenter", function () {
+        updateSearchSelection(idx);
+      });
+      btn.addEventListener("click", function () {
+        selectSearchResult(page);
+      });
+
+      searchModalResults.appendChild(btn);
+    });
+
+    searchSelectedIndex = 0;
   }
 
   function updateActiveNavLink() {
@@ -1035,6 +1144,19 @@
       emptyLi.textContent = "No sub-sections";
       tocList.appendChild(emptyLi);
     }
+
+    tocScrollArea.scrollTop = 0;
+    requestAnimationFrame(updateTocScrollFades);
+  }
+
+  function updateTocScrollFades() {
+    if (!tocSidebar || !tocScrollArea) return;
+    const maxScroll = tocScrollArea.scrollHeight - tocScrollArea.clientHeight;
+    tocSidebar.classList.toggle("has-top-fade", tocScrollArea.scrollTop > 4);
+    tocSidebar.classList.toggle(
+      "has-bottom-fade",
+      maxScroll > 4 && tocScrollArea.scrollTop < maxScroll - 4
+    );
   }
 
   function scrollToHeading(id, pushHash) {
@@ -1136,28 +1258,44 @@
       });
     }
 
-    searchTriggerBtn.addEventListener("click", function () {
-      if (window.innerWidth < 1024 && !navSidebar.classList.contains("open")) {
-        toggleNavDrawer();
-      }
-      setTimeout(function () {
-        navSearchInput.focus();
-        navSearchInput.select();
-      }, 60);
-    });
+    searchTriggerBtn.addEventListener("click", openSearchModal);
 
-    navSearchInput.addEventListener("input", function (e) {
-      const val = e.target.value;
-      clearNavSearchBtn.style.display = val ? "block" : "none";
-      renderNavTree(val);
-    });
+    if (searchModal) {
+      searchModal.addEventListener("click", function (e) {
+        if (e.target === searchModal) {
+          closeSearchModal();
+        }
+      });
+    }
 
-    clearNavSearchBtn.addEventListener("click", function () {
-      navSearchInput.value = "";
-      clearNavSearchBtn.style.display = "none";
-      renderNavTree("");
-      navSearchInput.focus();
-    });
+    if (searchModalInput) {
+      searchModalInput.addEventListener("input", function (e) {
+        renderSearchResults(e.target.value);
+      });
+
+      searchModalInput.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          updateSearchSelection(searchSelectedIndex + 1);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          updateSearchSelection(searchSelectedIndex - 1);
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          if (searchSelectedIndex >= 0 && searchResults[searchSelectedIndex]) {
+            selectSearchResult(searchResults[searchSelectedIndex]);
+          }
+        }
+      });
+    }
+
+    if (searchModalClearBtn) {
+      searchModalClearBtn.addEventListener("click", function () {
+        searchModalInput.value = "";
+        renderSearchResults("");
+        searchModalInput.focus();
+      });
+    }
 
     tocSidebar.addEventListener("mouseenter", function () {
       isTocHovered = true;
@@ -1165,6 +1303,7 @@
     tocSidebar.addEventListener("mouseleave", function () {
       isTocHovered = false;
     });
+    tocScrollArea.addEventListener("scroll", updateTocScrollFades);
 
     scrollTopBtn.addEventListener("click", function () {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1193,16 +1332,22 @@
     document.addEventListener("keydown", function (e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        searchTriggerBtn.click();
+        if (searchModal && searchModal.classList.contains("open")) {
+          closeSearchModal();
+        } else {
+          openSearchModal();
+        }
       } else if (
         e.key === "/" &&
         document.activeElement.tagName !== "INPUT" &&
         document.activeElement.tagName !== "TEXTAREA"
       ) {
         e.preventDefault();
-        searchTriggerBtn.click();
+        openSearchModal();
       } else if (e.key === "Escape") {
-        if (diagramLightbox.classList.contains("open")) {
+        if (searchModal && searchModal.classList.contains("open")) {
+          closeSearchModal();
+        } else if (diagramLightbox.classList.contains("open")) {
           closeLightbox();
         } else {
           closeAllDrawers();
@@ -1219,6 +1364,7 @@
       if (window.innerWidth >= 1280) {
         closeAllDrawers();
       }
+      updateTocScrollFades();
     });
 
     window.addEventListener("hashchange", function () {
@@ -1265,7 +1411,7 @@
         brandHomeLink.setAttribute("href", "#" + defaultRoute);
       }
 
-      renderNavTree("");
+      renderNavTree();
 
       const initial = parseHash();
       const matchedInitial = findPageByRoute(initial.route);
