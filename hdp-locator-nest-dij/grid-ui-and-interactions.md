@@ -95,7 +95,3 @@ When `currentMode === "edit"`:
 | `#btn-save-cell` | Submit button | Disables and shows `"Saving..."` during `POST /LocatorNestDIJ/UpdateLocator` |
 
 The modal closes via the header `×` button (`#close-modal-x`), **Cancel** button (`#close-modal-btn`), clicking the blurred `.modal-backdrop`, or automatically upon a successful save (which resets the form and triggers `loadNestsData()`).
-
-## Next Step
-
-Review all controller endpoints, grouping/upsert rules, and the `hdps_dij_ln_mst_locator` schema in [API & Database Schema](./api-and-database.md).

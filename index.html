@@ -118,16 +118,16 @@
 
         <!-- Rendered Markdown Document -->
         <article class="markdown-body" id="markdownContent"></article>
-
-        <!-- Previous / Next Page Navigation -->
-        <nav class="doc-pagination" id="docPagination" aria-label="Page pagination"></nav>
       </div>
     </main>
 
     <!-- RIGHT SIDEBAR: On This Page (Scroll-Spy TOC) -->
     <aside class="toc-sidebar" id="tocSidebar" aria-label="On this page">
       <div class="toc-scroll-area" id="tocScrollArea">
-        <ul class="toc-list" id="tocList"></ul>
+        <div class="toc-list-wrap" id="tocListWrap">
+          <span class="toc-active-indicator" id="tocActiveIndicator" aria-hidden="true"></span>
+          <ul class="toc-list" id="tocList"></ul>
+        </div>
       </div>
     </aside>
   </div>
@@ -137,17 +137,6 @@
     <div class="spinner"></div>
     <p>Loading documentation...</p>
   </div>
-
-  <!-- Floating Back to Top Button -->
-  <button
-    type="button"
-    class="scroll-top-btn"
-    id="scrollTopBtn"
-    title="Scroll to top"
-    aria-label="Scroll to top"
-  >
-    <i class="fas fa-chevron-up"></i>
-  </button>
 
   <!-- Search Modal (Ctrl+K) -->
   <div class="search-modal" id="searchModal" role="dialog" aria-modal="true" aria-label="Search documentation">

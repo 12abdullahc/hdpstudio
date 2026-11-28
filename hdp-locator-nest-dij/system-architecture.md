@@ -141,7 +141,3 @@ The following architectural strengths and future improvement opportunities were 
   - Switching to **Edit Mode** sets `searchBoxContainer.style.display = "none"` rather than hiding the outer `.search-group` pill wrapper, leaving an empty compact light-gray pill visible next to the mode toggle.
   - After the first save, `btnSaveCell.textContent = "Save Changes"` replaces the inner `<span class="btn-text">` element (visually identical, no functional impact).
   - `LocatorNestDIJController.cs` contains unused `using` imports (`LoginAndRegisterMVCMD5.ViewModel`, `Newtonsoft.Json`, `System.Diagnostics`, `System.Globalization`, `System.Reflection`, `System.Threading.Tasks`, `System.Web`).
-
-## Next Step
-
-Explore the rack visual design, Nest 1–4 zone color rules, blocked-slot indicators, live search navigator, and Edit Mode modal in [Grid UI, Search & Edit Mode](./grid-ui-and-interactions.md).

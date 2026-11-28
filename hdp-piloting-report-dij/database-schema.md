@@ -182,7 +182,3 @@ FROM hdps_common_mst_setting
 WHERE fprocess_code = 'C05' AND fproject_name = 'Piloting Report'
 ORDER BY fproject_no;
 ```
-
-## Next Step
-
-Follow day-to-day capture workflows, DPU rules, Settings tuning, and troubleshooting steps in the [Operator & IE Admin Guide](./user-guide.md).

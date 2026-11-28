@@ -375,7 +375,3 @@ erDiagram
 - **Unfiltered `AS_OEE` Lookups in Input Reject:** `NeoSprayInputReject()`, `GetDatesByMachine`, `GetShiftsByMachineAndDate`, and `GetToysByShift` query `AS_OEE` without filtering `Process_Code == "C07"` (unlike `GetNeoSprayFilterOptions` and `ExportNeoSpray`).
 - **Strict Filter Parsing in `ExportNeoSpray`:** Query parameters (`year`, `month`, `we`, `date`, `shift`, `machine`) are parsed with `int.Parse` / `double.Parse` / `DateTime.Parse`, so malformed query strings return `HTTP 500` rather than `400 Bad Request`.
 - **Legacy / Duplicate Controller Artifacts:** `GET /OEE/GetSemiAutoSprayStatus` exists in `OEEController.cs` as an unused lightweight sibling of `GetSemiAutoSprayMachines`, and `OEEController` instantiates two separate `HDPStudioOEEStudioEntities` fields (`db` and `dbHdpsOeeStudio`).
-
-## Next Step
-
-Continue to [Pages, UI & Right Sidebar](./pages-and-ui.md) for a detailed walkthrough of every view, the 5-panel right sidebar, Chart.js chart mechanics, and cascading filter controls.

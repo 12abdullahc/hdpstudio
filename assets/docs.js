@@ -9,6 +9,11 @@
 
   const MERMAID_CDN_URL =
     "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js";
+  const HEADING_SCROLL_OFFSET = 88;
+
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
 
   // ── State ──
   let manifest = null;
@@ -16,6 +21,11 @@
   let currentRoute = "";
   let headingsData = [];
   let currentActiveHeadingId = "";
+  let activeScrollTarget = null;
+  let lockedTocHeadingId = "";
+  let skipNextNavCenter = false;
+  let hashSyncTimer = null;
+  let pendingHashTarget = "";
   let currentMermaidEntries = [];
   let mermaidLoadPromise = null;
   let mermaidInitializedTheme = "";
@@ -40,10 +50,11 @@
 
   const tocSidebar = document.getElementById("tocSidebar");
   const tocScrollArea = document.getElementById("tocScrollArea");
+  const tocListWrap = document.getElementById("tocListWrap");
+  const tocActiveIndicator = document.getElementById("tocActiveIndicator");
   const tocList = document.getElementById("tocList");
 
   const markdownContent = document.getElementById("markdownContent");
-  const docPagination = document.getElementById("docPagination");
 
   const loadingOverlay = document.getElementById("loadingOverlay");
   const errorContainer = document.getElementById("errorContainer");
@@ -58,7 +69,6 @@
   const themeToggleBtn = document.getElementById("themeToggleBtn");
   const themeToggleIcon = document.getElementById("themeToggleIcon");
   const drawerOverlay = document.getElementById("drawerOverlay");
-  const scrollTopBtn = document.getElementById("scrollTopBtn");
 
   const diagramLightbox = document.getElementById("diagramLightbox");
   const diagramLightboxTitle = document.getElementById("diagramLightboxTitle");
@@ -299,6 +309,9 @@
       navSidebar.classList.add("open");
       drawerOverlay.classList.add("open");
       document.body.style.overflow = "hidden";
+      requestAnimationFrame(function () {
+        centerActiveNavLink(false);
+      });
     }
   }
 
@@ -309,7 +322,10 @@
       tocSidebar.classList.add("open");
       drawerOverlay.classList.add("open");
       document.body.style.overflow = "hidden";
-      requestAnimationFrame(updateTocScrollFades);
+      requestAnimationFrame(function () {
+        updateTocScrollFades();
+        updateTocIndicator(false);
+      });
     }
   }
 
@@ -434,6 +450,7 @@
         a.textContent = page.title;
 
         a.addEventListener("click", function () {
+          skipNextNavCenter = true;
           if (window.innerWidth < 1024) {
             closeAllDrawers();
           }
@@ -585,8 +602,34 @@
     });
   }
 
+  function centerActiveNavLink(smooth) {
+    if (!navTree) return;
+    const activeLink = navTree.querySelector(".nav-page-link.active");
+    if (!activeLink) return;
+
+    const groupEl = activeLink.closest(".nav-group");
+    if (groupEl && groupEl.classList.contains("collapsed")) {
+      groupEl.classList.remove("collapsed");
+    }
+
+    const treeRect = navTree.getBoundingClientRect();
+    const linkRect = activeLink.getBoundingClientRect();
+    if (!treeRect.height || !linkRect.height) return;
+
+    const currentCenterOffset = linkRect.top - treeRect.top + linkRect.height / 2;
+    const targetScrollTop =
+      navTree.scrollTop + currentCenterOffset - treeRect.height / 2;
+    const maxScroll = Math.max(0, navTree.scrollHeight - navTree.clientHeight);
+    const clampedTop = Math.max(0, Math.min(maxScroll, Math.round(targetScrollTop)));
+
+    navTree.scrollTo({
+      top: clampedTop,
+      behavior: smooth ? "smooth" : "instant"
+    });
+  }
+
   // ── Document Rendering Pipeline ──
-  async function loadPage(route, targetHeadingId) {
+  async function loadPage(route, targetHeadingId, isInitialLoad) {
     const pageEntry = findPageByRoute(route) || flatPages[0];
     if (!pageEntry) {
       showError("No documents registered", "docs-manifest.json contains no pages.");
@@ -596,13 +639,19 @@
 
     currentRoute = pageEntry.route;
     currentActiveHeadingId = "";
+    activeScrollTarget = null;
+    lockedTocHeadingId = "";
+    cancelPendingHashSync();
     disconnectMermaidObserver();
     mermaidRenderToken++;
     currentMermaidEntries = [];
     hideError();
     showLoading(true);
     updateActiveNavLink();
-    renderPagination(pageEntry);
+    if (!skipNextNavCenter) {
+      centerActiveNavLink(!isInitialLoad);
+    }
+    skipNextNavCenter = false;
 
     try {
       const res = await fetch(pageEntry.file, { cache: "no-cache" });
@@ -625,21 +674,25 @@
       document.title =
         pageEntry.title + " — " + pageEntry.groupTitle + " | " + (manifest.siteTitle || "Docs");
 
-      if (targetHeadingId) {
-        scrollToHeading(targetHeadingId, false);
+      if (targetHeadingId && document.getElementById(targetHeadingId)) {
+        await scrollToHeading(targetHeadingId, false, true);
+        if (currentMermaidEntries.length > 0) {
+          scheduleMermaidDiagrams(currentMermaidEntries, mermaidRenderToken, currentTheme);
+        }
+        showLoading(false);
       } else {
-        window.scrollTo({ top: 0 });
-      }
-      scrollSpy();
-      showLoading(false);
-
-      if (currentMermaidEntries.length > 0) {
-        scheduleMermaidDiagrams(currentMermaidEntries, mermaidRenderToken, currentTheme);
+        window.scrollTo({ top: 0, behavior: "instant" });
+        scrollSpy();
+        showLoading(false);
+        if (currentMermaidEntries.length > 0) {
+          scheduleMermaidDiagrams(currentMermaidEntries, mermaidRenderToken, currentTheme);
+        }
       }
     } catch (err) {
       console.error("Failed to load documentation page:", err);
       markdownContent.innerHTML = "";
       tocList.innerHTML = "";
+      hideTocIndicator();
       showError(
         "Failed to load document",
         'Could not load "' + pageEntry.file + '". ' + err.message,
@@ -894,6 +947,11 @@
           styleMermaidSvg(svg);
           entry.svgCache[theme] = entry.canvas.innerHTML;
           entry.renderedTheme = theme;
+          if (activeScrollTarget && activeScrollTarget.token === token) {
+            alignWindowToHeading(activeScrollTarget.id, false);
+          } else {
+            scrollSpy();
+          }
         }
       } catch (err) {
         if (token !== mermaidRenderToken) return;
@@ -1146,7 +1204,44 @@
     }
 
     tocScrollArea.scrollTop = 0;
+    hideTocIndicator();
     requestAnimationFrame(updateTocScrollFades);
+  }
+
+  function hideTocIndicator() {
+    if (!tocActiveIndicator) return;
+    tocActiveIndicator.classList.remove("visible");
+  }
+
+  function updateTocIndicator(animate) {
+    if (!tocActiveIndicator || !tocListWrap) return;
+    const activeLink = tocList.querySelector(".toc-link.active");
+    if (!activeLink) {
+      hideTocIndicator();
+      return;
+    }
+
+    const wrapRect = tocListWrap.getBoundingClientRect();
+    const linkRect = activeLink.getBoundingClientRect();
+    if (!linkRect.height) return;
+
+    const top = Math.round(linkRect.top - wrapRect.top + 3);
+    const height = Math.max(16, Math.round(linkRect.height - 6));
+
+    if (!animate) {
+      tocActiveIndicator.classList.add("no-transition");
+    }
+
+    tocActiveIndicator.style.transform = "translateY(" + top + "px)";
+    tocActiveIndicator.style.height = height + "px";
+    tocActiveIndicator.classList.add("visible");
+
+    if (!animate) {
+      void tocActiveIndicator.offsetHeight;
+      requestAnimationFrame(function () {
+        tocActiveIndicator.classList.remove("no-transition");
+      });
+    }
   }
 
   function updateTocScrollFades() {
@@ -1159,90 +1254,161 @@
     );
   }
 
-  function scrollToHeading(id, pushHash) {
+  function clearScrollLock() {
+    activeScrollTarget = null;
+    lockedTocHeadingId = "";
+  }
+
+  function cancelPendingHashSync() {
+    if (hashSyncTimer) {
+      clearTimeout(hashSyncTimer);
+      hashSyncTimer = null;
+    }
+    pendingHashTarget = "";
+  }
+
+  function flushPendingHashSync() {
+    if (!pendingHashTarget) return;
+    const nextHash = pendingHashTarget;
+    cancelPendingHashSync();
+    if (window.location.hash !== nextHash) {
+      try {
+        history.replaceState(null, "", nextHash);
+      } catch (e) {
+        /* ignore history rate-limit errors */
+      }
+    }
+  }
+
+  function scheduleHashSync(headingId) {
+    if (!currentRoute) return;
+    const nextHash = headingId
+      ? "#" + currentRoute + "@" + encodeURIComponent(headingId)
+      : "#" + currentRoute;
+    if (window.location.hash === nextHash) {
+      cancelPendingHashSync();
+      return;
+    }
+    pendingHashTarget = nextHash;
+    if (hashSyncTimer) clearTimeout(hashSyncTimer);
+    hashSyncTimer = setTimeout(flushPendingHashSync, 120);
+  }
+
+  function setActiveTocHeading(id) {
+    if (!id || id === currentActiveHeadingId) return;
+    const wasVisible = Boolean(
+      tocActiveIndicator && tocActiveIndicator.classList.contains("visible")
+    );
+    currentActiveHeadingId = id;
+    tocList.querySelectorAll(".toc-link").forEach(function (link) {
+      const isMatch = link.dataset.headingId === id;
+      link.classList.toggle("active", isMatch);
+
+      if (isMatch && !isTocHovered) {
+        const linkTop = link.offsetTop;
+        const viewHeight = tocScrollArea.clientHeight;
+        const scrollTop = tocScrollArea.scrollTop;
+        if (linkTop < scrollTop || linkTop > scrollTop + viewHeight - 40) {
+          tocScrollArea.scrollTo({
+            top: Math.max(0, linkTop - viewHeight / 2),
+            behavior: wasVisible ? "smooth" : "instant"
+          });
+        }
+      }
+    });
+    updateTocIndicator(wasVisible);
+  }
+
+  function alignWindowToHeading(id, smooth) {
     const target = document.getElementById(id);
     if (!target) return;
+    const top = Math.max(
+      0,
+      target.getBoundingClientRect().top + window.scrollY - HEADING_SCROLL_OFFSET
+    );
+    window.scrollTo({ top: top, behavior: smooth ? "smooth" : "instant" });
+  }
 
-    const headerOffset = 80;
-    const top = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  function scrollToHeading(id, pushHash, instant) {
+    const target = document.getElementById(id);
+    if (!target) return Promise.resolve();
+
+    const renderToken = mermaidRenderToken;
+    lockedTocHeadingId = id;
+    setActiveTocHeading(id);
+
+    const pendingAbove = currentMermaidEntries.filter(function (entry) {
+      const isUnrendered =
+        entry.renderedTheme !== currentTheme || !entry.canvas.querySelector("svg");
+      if (!isUnrendered) return false;
+      return Boolean(
+        entry.card.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING
+      );
+    });
+
+    activeScrollTarget = pendingAbove.length
+      ? { id: id, token: renderToken }
+      : null;
 
     if (pushHash) {
+      cancelPendingHashSync();
       history.replaceState(null, "", "#" + currentRoute + "@" + encodeURIComponent(id));
     }
+
+    if (!instant || pendingAbove.length === 0) {
+      alignWindowToHeading(id, !instant);
+    }
+
+    if (pendingAbove.length > 0) {
+      const renders = pendingAbove.map(function (entry) {
+        if (mermaidObserver) {
+          mermaidObserver.unobserve(entry.card);
+        }
+        return queueMermaidEntryRender(entry, renderToken, currentTheme);
+      });
+      return Promise.all(renders).then(function () {
+        if (
+          activeScrollTarget &&
+          activeScrollTarget.id === id &&
+          activeScrollTarget.token === mermaidRenderToken
+        ) {
+          alignWindowToHeading(id, false);
+          activeScrollTarget = null;
+        }
+      });
+    }
+
+    return Promise.resolve();
   }
 
   function scrollSpy() {
     if (!headingsData.length) return;
-    const scrollPos = window.scrollY + 100;
-    let active = headingsData[0];
-
-    for (let i = 0; i < headingsData.length; i++) {
-      if (scrollPos >= headingsData[i].element.offsetTop) {
-        active = headingsData[i];
-      } else {
-        break;
-      }
-    }
-
-    if (active && active.id !== currentActiveHeadingId) {
-      currentActiveHeadingId = active.id;
-      tocList.querySelectorAll(".toc-link").forEach(function (link) {
-        const isMatch = link.dataset.headingId === active.id;
-        link.classList.toggle("active", isMatch);
-
-        if (isMatch && !isTocHovered) {
-          const linkTop = link.offsetTop;
-          const viewHeight = tocScrollArea.clientHeight;
-          const scrollTop = tocScrollArea.scrollTop;
-          if (linkTop < scrollTop || linkTop > scrollTop + viewHeight - 40) {
-            tocScrollArea.scrollTo({
-              top: Math.max(0, linkTop - viewHeight / 2),
-              behavior: "smooth"
-            });
-          }
-        }
-      });
-    }
-  }
-
-  // ── Prev / Next Pagination ──
-  function renderPagination(pageEntry) {
-    const idx = flatPages.findIndex(function (p) {
-      return p.route === pageEntry.route;
-    });
-    const prev = idx > 0 ? flatPages[idx - 1] : null;
-    const next = idx >= 0 && idx < flatPages.length - 1 ? flatPages[idx + 1] : null;
-
-    docPagination.innerHTML = "";
-    if (!prev && !next) {
-      docPagination.style.display = "none";
+    if (lockedTocHeadingId) {
+      setActiveTocHeading(lockedTocHeadingId);
       return;
     }
 
-    docPagination.style.display = "grid";
+    const atBottom =
+      window.scrollY > 0 &&
+      window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 4;
 
-    if (prev) {
-      const a = document.createElement("a");
-      a.href = "#" + prev.route;
-      a.className = "pagination-card prev";
-      a.innerHTML =
-        '<span class="pagination-dir"><i class="fas fa-arrow-left"></i> Previous</span>' +
-        '<span class="pagination-title">' + escapeHtml(prev.title) + "</span>" +
-        '<span class="pagination-group">' + escapeHtml(prev.groupTitle) + "</span>";
-      docPagination.appendChild(a);
+    let activeId = headingsData[0].id;
+    if (atBottom) {
+      activeId = headingsData[headingsData.length - 1].id;
+    } else {
+      const activationOffset = 112;
+      for (let i = 0; i < headingsData.length; i++) {
+        if (headingsData[i].element.getBoundingClientRect().top <= activationOffset) {
+          activeId = headingsData[i].id;
+        } else {
+          break;
+        }
+      }
     }
 
-    if (next) {
-      const a = document.createElement("a");
-      a.href = "#" + next.route;
-      a.className = "pagination-card next";
-      a.innerHTML =
-        '<span class="pagination-dir">Next <i class="fas fa-arrow-right"></i></span>' +
-        '<span class="pagination-title">' + escapeHtml(next.title) + "</span>" +
-        '<span class="pagination-group">' + escapeHtml(next.groupTitle) + "</span>";
-      docPagination.appendChild(a);
-    }
+    setActiveTocHeading(activeId);
+    scheduleHashSync(window.scrollY < 40 ? "" : activeId);
   }
 
   // ── Event Listeners ──
@@ -1305,10 +1471,6 @@
     });
     tocScrollArea.addEventListener("scroll", updateTocScrollFades);
 
-    scrollTopBtn.addEventListener("click", function () {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
     // Lightbox Controls
     closeLightboxBtn.addEventListener("click", closeLightbox);
     diagramLightbox.addEventListener("click", function (e) {
@@ -1355,9 +1517,54 @@
       }
     });
 
-    window.addEventListener("scroll", function () {
-      scrollTopBtn.classList.toggle("visible", window.scrollY > 320);
-      scrollSpy();
+    window.addEventListener("scroll", scrollSpy);
+
+    window.addEventListener(
+      "wheel",
+      function (e) {
+        if (tocSidebar.contains(e.target) || navSidebar.contains(e.target)) return;
+        if (activeScrollTarget || lockedTocHeadingId) {
+          clearScrollLock();
+        }
+      },
+      { passive: true }
+    );
+
+    window.addEventListener(
+      "touchmove",
+      function (e) {
+        if (tocSidebar.contains(e.target) || navSidebar.contains(e.target)) return;
+        if (activeScrollTarget || lockedTocHeadingId) {
+          clearScrollLock();
+        }
+      },
+      { passive: true }
+    );
+
+    window.addEventListener("pointerdown", function (e) {
+      if (e.clientX >= document.documentElement.clientWidth) {
+        clearScrollLock();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (
+        document.activeElement.tagName === "INPUT" ||
+        document.activeElement.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+      if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "PageUp" ||
+        e.key === "PageDown" ||
+        e.key === "Home" ||
+        e.key === "End" ||
+        e.key === " "
+      ) {
+        clearScrollLock();
+      }
     });
 
     window.addEventListener("resize", function () {
@@ -1365,6 +1572,7 @@
         closeAllDrawers();
       }
       updateTocScrollFades();
+      updateTocIndicator(false);
     });
 
     window.addEventListener("hashchange", function () {
@@ -1376,6 +1584,9 @@
         scrollToHeading(parsed.heading, false);
       }
     });
+
+    window.addEventListener("beforeunload", flushPendingHashSync);
+    window.addEventListener("pagehide", flushPendingHashSync);
   }
 
   // ── Bootstrap ──
@@ -1419,7 +1630,7 @@
       if (initial.route && !matchedInitial && targetRoute) {
         history.replaceState(null, "", "#" + targetRoute);
       }
-      await loadPage(targetRoute, matchedInitial ? initial.heading : "");
+      await loadPage(targetRoute, matchedInitial ? initial.heading : "", true);
     } catch (err) {
       console.error("Failed to initialize documentation portal:", err);
       showError(

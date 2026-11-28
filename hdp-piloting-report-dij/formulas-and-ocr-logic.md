@@ -87,7 +87,3 @@ When `POST /OCR/ProcessOcrGemini` receives a Base64-encoded PNG screenshot:
 
 - **Append-Only Writes:** Both `openRecordModal(..., 'edit')` and `SaveOcrData` reset `fno = 0` so edits create new rows with fresh `fcreated_at` / `fcreated_by` metadata (`fupdated_at = null`, `fupdated_by = null`).
 - **Latest-Revision Resolution in OEE Export:** Because multiple piloting revisions can share the same `fpart_no`, `ExportOeeDataToNetworkPathStatic` orders descending by `fno`, groups by `fpart_no.Trim()` (case-insensitive), selects `g.First()` (the newest revision), and re-sorts ascending by `fno` before generating the 6-column OEE workbook.
-
-## Next Step
-
-Inspect all 20 `OCRController` endpoints, the custom AJAX CSRF attribute, and both EPPlus auto-export schemas in [API & Auto-Export Reference](./api-and-auto-export.md).

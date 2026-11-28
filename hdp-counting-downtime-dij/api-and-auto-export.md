@@ -291,7 +291,3 @@ Row `1` contains bold headers (`Style.Font.Bold = true`), data begins on Row `2`
 | `G` | `Notes` | `item.fnotes` | String |
 | `H` | `Created At` | `item.fcreated_at?.ToString("yyyy-MM-dd HH:mm:ss")` | String timestamp |
 | `I` | `Updated At` | `item.fupdated_at?.ToString("yyyy-MM-dd HH:mm:ss")` | String timestamp |
-
-## Next Step
-
-Inspect the complete SQL table definitions and entity relationships in [Database Schema](./database-schema.md).

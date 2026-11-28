@@ -182,7 +182,3 @@ Used by `GetNeoSprayFilterOptions`, `ExportNeoSpray`, `NeoSprayInputReject` (dro
 | | `fno_link` | `int` | Yes | `1` (primary report slot queried by `NeoSprayReport`) |
 | | `flink` | `nvarchar(MAX)` | Yes | Embedded Power BI URL injected into `ViewBag.PbiLink` |
 | | `flink_description` | `nvarchar(MAX)` | Yes | Human-readable report description |
-
-## Next Step
-
-Continue to [Operator & Supervisor Guide](./user-guide.md) for day-to-day workflows, filter usage tips, shift reset instructions, and troubleshooting.

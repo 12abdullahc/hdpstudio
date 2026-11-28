@@ -197,7 +197,3 @@ The following architectural details and improvement opportunities were verified 
 - **Silent Background Error Logging:** Exceptions in `OnExportTimerCallback` and `ExportDataToNetworkPathStatic` are caught and written only to `System.Diagnostics.Debug.WriteLine(...)`, which is not persisted to a SQL error log or Windows Event Log in release builds.
 - **Intentional `null` User Audit Columns:** Both `fcreated_by` and `fupdated_by` are explicitly set to `null` because shopfloor kiosks run without requiring an authenticated INSIDE user session.
 - **Unused Utility Hooks:** `GET /CountingDowntimeDIJ/GetMachines` in the controller and `refreshCurrentMachineStatus()` in `Index.cshtml` are defined as reusable helpers not invoked during standard UI interaction.
-
-## Next Step
-
-Explore the interactive frontend, 12-color machine identity palette, dynamic PWA installation, and 4-layer sync engine in [UI, PWA & Real-Time Sync](./ui-pwa-and-sync.md).

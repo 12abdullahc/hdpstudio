@@ -147,7 +147,3 @@ If validation fails, it throws `HttpAntiForgeryException("Anti-forgery token val
 | `D` | *(blank header)* | `XLOOKUP(A{row}, '[extDij]Sheet2'!$A:$A, '[extDij]Sheet2'!$E:$E)` | General |
 | `E` | `W YIELD` | `XLOOKUP(A{row}, '[extDij]Sheet2'!$A:$A, '[extDij]Sheet2'!$V:$V)` | `0.00` |
 | `F` | `W YIELD NEW` | `E{row}+(E{row}*0.2)` *(+20% yield buffer)* | `0.00` |
-
-## Next Step
-
-Explore the complete entity-relationship diagram and column definitions across all 8 database tables in [Database Schema](./database-schema.md).

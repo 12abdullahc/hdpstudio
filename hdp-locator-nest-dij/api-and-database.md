@@ -166,7 +166,3 @@ FROM hdps_dij_ln_mst_locator
 GROUP BY flocator_nest, fcolumn_name, flocator_nest_row
 HAVING COUNT(*) > 1;
 ```
-
-## Next Step
-
-Learn day-to-day shopfloor toy lookup, authenticated slot administration, blocking/clearing conventions, and troubleshooting in the [Operator & Admin Guide](./user-guide.md).

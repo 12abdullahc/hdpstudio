@@ -255,7 +255,3 @@ Streams filtered `AS_OEE` rows (`Process_Code == "C07" && Date.HasValue`, ordere
 `Date` · `WE` · `Machine` · `Shift` · `Total Time` · `Break` · `Briefing` · `Available Time` · `Total Breakdown Time` · `Operating Time` · `Standard Output` · `Good Output` · `Reject` · `Actual Output` · `Var` · `Availability` · `Performance` · `Quality` · `OEE`
 
 Filter parameters are parsed strictly with `int.Parse` / `double.Parse` / `DateTime.Parse`; malformed query values or unhandled exceptions return `HTTP 500 Internal Server Error` with the exception message.
-
-## Next Step
-
-Continue to [Database Schema & Views](./database-schema.md) for full column-by-column definitions of every SQL view, master table, and operational table used by HDP OEE Neo Spray.

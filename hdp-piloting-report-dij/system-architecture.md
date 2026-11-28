@@ -196,7 +196,3 @@ The following architectural strengths and hardening opportunities were verified 
 - **Append-Only Edit vs. Hard Delete:** `SaveOcrData` always forces `model.fno = 0` so edits create new revision rows rather than overwriting history; however, `Delete(int id)` performs a physical `Remove(item)` hard delete (ignoring soft-delete columns `fdeleted_at`/`fdeleted_by`).
 - **Gemini API Key Query Parameter:** `ProcessOcrGemini` appends `?key={AIAPIKey}` in the outbound Gemini URL; migrating to the `x-goog-api-key` HTTP request header is a cleaner practice so keys never appear in proxy or server trace logs.
 - **Hardcoded Dropdown Catalogs & Sculpt Reuse:** Dropdown endpoints (`GetMcCodes`, `GetDijNestTypes`, `GetCleaningProcesses`, `GetPackingTypes`, `GetStatusArrays`, `GetStatusSamples`, `GetDpuOptions`, `GetMaterialParts`, `GetPicPilotingOptions`) return hardcoded C# lists rather than master SQL tables, and `loadSculptNumbers()` in `Index.cshtml` calls `GetToyNumbers` as its suggestion source.
-
-## Next Step
-
-Explore the 4 screenshot capture flows, batch OCR cards, 4-mode review modal, DPU conditional form, DataTable client export, and 3-tab Settings UI in [UI, OCR Capture & Settings](./ui-ocr-and-settings.md).

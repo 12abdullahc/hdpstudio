@@ -205,7 +205,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-height) + 28px);
 }
 
@@ -591,6 +590,42 @@ body {
   overscroll-behavior-y: contain;
 }
 
+.toc-list-wrap {
+  position: relative;
+}
+
+.toc-active-indicator {
+  position: absolute;
+  top: 0;
+  left: 6px;
+  width: 2px;
+  height: 0;
+  border-radius: 999px;
+  background: var(--toc-indicator);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(0);
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.18s ease;
+  will-change: transform, height;
+}
+
+.toc-active-indicator.visible {
+  opacity: 1;
+}
+
+.toc-active-indicator.no-transition {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toc-active-indicator {
+    transition: none;
+  }
+}
+
 .toc-list {
   list-style: none;
   margin-left: 6px;
@@ -602,15 +637,14 @@ body {
 
 .toc-link {
   display: block;
-  padding: 6px 8px 6px 14px;
+  padding: 6px 8px 6px 16px;
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 13.5px;
   font-weight: 450;
   line-height: 1.45;
   background: transparent;
-  border-left: 2px solid transparent;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.18s ease;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -622,16 +656,11 @@ body {
 .toc-link.active {
   color: var(--text-primary);
   background: transparent;
-  border-left-color: var(--toc-indicator);
   font-weight: 500;
 }
 
-.toc-h2 {
-  padding-left: 14px;
-}
-
 .toc-h3 {
-  padding-left: 26px;
+  padding-left: 28px;
   font-size: 12.5px;
 }
 
@@ -1289,72 +1318,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   PREV / NEXT PAGINATION
-═══════════════════════════════════════════════ */
-.doc-pagination {
-  margin-top: 56px;
-  padding-top: 28px;
-  border-top: 1px solid var(--border-color);
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.pagination-card {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 18px 22px;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.pagination-card:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-card);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.pagination-card.next {
-  text-align: right;
-  align-items: flex-end;
-  grid-column: 2;
-}
-
-.pagination-dir {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-.pagination-title {
-  font-family: var(--font-serif);
-  font-size: 17px;
-  font-weight: 500;
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
-}
-
-.pagination-card:hover .pagination-title {
-  color: var(--accent);
-}
-
-.pagination-group {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-}
-
-/* ═══════════════════════════════════════════════
-   LOADING, ERROR & FLOATING BUTTONS
+   LOADING, ERROR & DRAWER OVERLAY
 ═══════════════════════════════════════════════ */
 .loading-overlay {
   position: fixed;
@@ -1459,38 +1423,6 @@ body {
   display: block;
 }
 
-.scroll-top-btn {
-  position: fixed;
-  bottom: 24px;
-  right: calc(var(--toc-width) + var(--toc-right-offset) + 20px);
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--border-color);
-  background: var(--bg-base);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 800;
-  box-shadow: var(--shadow-md);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s ease;
-}
-
-.scroll-top-btn.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.scroll-top-btn:hover {
-  background: var(--btn-primary-bg);
-  border-color: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
-}
-
 /* ═══════════════════════════════════════════════
    RESPONSIVE BREAKPOINTS
 ═══════════════════════════════════════════════ */
@@ -1520,10 +1452,6 @@ body {
 
   .mobile-toc-btn {
     display: inline-flex;
-  }
-
-  .scroll-top-btn {
-    right: 24px;
   }
 }
 
@@ -1575,16 +1503,6 @@ body {
 
   .brand-title {
     font-size: 20px;
-  }
-
-  .doc-pagination {
-    grid-template-columns: 1fr;
-  }
-
-  .pagination-card.next {
-    grid-column: 1;
-    text-align: left;
-    align-items: flex-start;
   }
 }
 

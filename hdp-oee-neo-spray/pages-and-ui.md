@@ -174,7 +174,3 @@ Five Neo Spray Razor views (`73` lines each) currently render a standardized `"U
 | `NeoSprayPerformance.cshtml` | `"performance"` | Performance, cycle-time & output variance analytics |
 | `NeoSprayQuality.cshtml` | `"quality"` | Quality yield & reject pareto analytics |
 | `NeoSprayMore.cshtml` | `"live-preview"` | Alternative live preview layout *(currently commented out in navigation)* |
-
-## Next Step
-
-Continue to [OEE Formulas & Business Logic](./oee-formulas-and-logic.md) for the exact server-side and client-side math behind Simple OEE, Aggregate OEE, Shift resolution, Last OEE lookback, and Reject recalculation.

@@ -195,7 +195,3 @@ When an operator logs `qtyToAdd > 0` throw-off rejects against an `AS_OEE` recor
    record.OEE         = Math.Max(0, Math.Min(1, availability * performance * quality));
    ```
 3. **Insert Detail Row (`AS_Reject`):** Inserts a new row with `OEE_Id = record.ID ?? record.Number`, `Reject_Code`, `Reject_Name`, `Qty = (int)qtyToAdd`, and `Time = DateTime.Now.TimeOfDay`, then commits both changes in a single `db.SaveChanges()` call.
-
-## Next Step
-
-Continue to [API & Data Export Reference](./api-and-exports.md) for every controller endpoint signature, query parameter, JSON response schema, and CSV/XLSX/PDF export specification.

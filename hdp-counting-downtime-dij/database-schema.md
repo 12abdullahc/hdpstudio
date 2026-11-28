@@ -144,7 +144,3 @@ WHERE fprocess_code = 'C05'
   AND fproject_name = 'Counting Downtime DIJ'
   AND fproject_no = 1;
 ```
-
-## Next Step
-
-Learn day-to-day shopfloor procedures, per-machine PWA installation, SQL export tuning, and troubleshooting in the [Operator & Supervisor Guide](./user-guide.md).

@@ -81,7 +81,3 @@ Accessible via the right-edge `isOcrSidebar` gear button (`/OCR/Settings`), `Set
 | **Cycle time & output** (`cycle-time-output`) | `hdps_common_mst_setting` (`fprocess_code = "C05"`, `fproject_name = "Piloting Report"`, `fproject_no = 1..4`) | Load/unload nest (`20s`), Additional auto cleaning (`20s`), Additional auto wiping (`36s`), Standard allowance (`5%`, validated `5%–6%`) |
 
 Clicking **Reset to default** resets only the **currently active tab** after a confirmation prompt and immediately saves all settings to SQL Server (which also reschedules `_exportTimer` live).
-
-## Next Step
-
-Review the exact cycle-time conversion, Output per Hour formula, multi-angle ink yield scaling, and Gemini 40-field OCR prompt contract in [Cycle Time, Ink Math & OCR Logic](./formulas-and-ocr-logic.md).

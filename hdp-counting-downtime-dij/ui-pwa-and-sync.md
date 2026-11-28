@@ -112,7 +112,3 @@ All four layers invoke `fetchMachineStatus(_currentMachine, true, true)`:
 1. **`_isFetchingStatus` Mutex:** Drops overlapping fetches if a previous request is still in flight.
 2. **`preserveNotes = true`:** Keeps any unsaved text currently typed in `#inputNotes` intact.
 3. **`isBackground = true`:** Suppresses error toast popups during transient background polling failures (logging only to `console.warn`).
-
-## Next Step
-
-Review every server-side endpoint contract, JSON payload, duration formatting rule, and the scheduled EPPlus Excel exporter in [API & Auto-Export Reference](./api-and-auto-export.md).
